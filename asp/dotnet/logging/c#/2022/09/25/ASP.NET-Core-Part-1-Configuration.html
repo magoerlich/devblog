@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Logging in ASP.NET Core (Part 1 - Configuration) | mageorlich devblog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Logging in ASP.NET Core (Part 1 - Configuration)" />
+<meta name="author" content="Manuel Görlich" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="How to configure logging in ASP.NET Core" />
+<meta property="og:description" content="How to configure logging in ASP.NET Core" />
+<link rel="canonical" href="https://magoerlich.github.io/devblog/asp/dotnet/logging/c%23/2022/09/25/ASP.NET-Core-Part-1-Configuration.html" />
+<meta property="og:url" content="https://magoerlich.github.io/devblog/asp/dotnet/logging/c%23/2022/09/25/ASP.NET-Core-Part-1-Configuration.html" />
+<meta property="og:site_name" content="mageorlich devblog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-09-25T00:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Logging in ASP.NET Core (Part 1 - Configuration)" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Manuel Görlich"},"dateModified":"2022-09-25T00:00:00-05:00","datePublished":"2022-09-25T00:00:00-05:00","description":"How to configure logging in ASP.NET Core","headline":"Logging in ASP.NET Core (Part 1 - Configuration)","mainEntityOfPage":{"@type":"WebPage","@id":"https://magoerlich.github.io/devblog/asp/dotnet/logging/c%23/2022/09/25/ASP.NET-Core-Part-1-Configuration.html"},"url":"https://magoerlich.github.io/devblog/asp/dotnet/logging/c%23/2022/09/25/ASP.NET-Core-Part-1-Configuration.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/devblog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://magoerlich.github.io/devblog/feed.xml" title="mageorlich devblog" /><link rel="shortcut icon" type="image/x-icon" href="/devblog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/devblog/">mageorlich devblog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/devblog/about/">About Me</a><a class="page-link" href="/devblog/search/">Search</a><a class="page-link" href="/devblog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Logging in ASP.NET Core (Part 1 - Configuration)</h1><p class="page-description">How to configure logging in ASP.NET Core</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-09-25T00:00:00-05:00" itemprop="datePublished">
+        Sep 25, 2022
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Manuel Görlich</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      6 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/devblog/categories/#asp">asp</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/devblog/categories/#dotnet">dotnet</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/devblog/categories/#logging">logging</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/devblog/categories/#c#">c#</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-justify-center">
+          <div class="px-2">
+
+    <a href="https://github.com/magoerlich/devblog/tree/master/_notebooks/2022-09-25-ASP.NET-Core-Part-1-Configuration.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/devblog/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/magoerlich/devblog/master?filepath=_notebooks%2F2022-09-25-ASP.NET-Core-Part-1-Configuration.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/devblog/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/magoerlich/devblog/blob/master/_notebooks/2022-09-25-ASP.NET-Core-Part-1-Configuration.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/devblog/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+          <div class="px-2">
+  <a href="https://deepnote.com/launch?url=https%3A%2F%2Fgithub.com%2Fmagoerlich%2Fdevblog%2Fblob%2Fmaster%2F_notebooks%2F2022-09-25-ASP.NET-Core-Part-1-Configuration.ipynb" target="_blank">
+      <img class="notebook-badge-image" src="/devblog/assets/badges/deepnote.svg" alt="Launch in Deepnote"/>
+  </a>
+</div>
+
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h2"><a href="#Intro">Intro </a></li>
+<li class="toc-entry toc-h2"><a href="#Default-Config">Default Config </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Categories">Categories </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#Customize-the-basic-config">Customize the basic config </a></li>
+<li class="toc-entry toc-h1"><a href="#hide-collapse">hide-collapse </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Log-Level">Log Level </a></li>
+</ul>
+</li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2022-09-25-ASP.NET-Core-Part-1-Configuration.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Intro">
+<a class="anchor" href="#Intro" aria-hidden="true"><span class="octicon octicon-link"></span></a>Intro<a class="anchor-link" href="#Intro"> </a>
+</h2>
+<p>There are multiple ways to log informations in ASP.NET and theres a wide variety of frameworks to make it fit your usecase.</p>
+<p>But this article will be about the Default logging of ASP.NET, because it's important to understand the fundamentals before you advance to more complex toolings.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Default-Config">
+<a class="anchor" href="#Default-Config" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default Config<a class="anchor-link" href="#Default-Config"> </a>
+</h2>
+<p>When you start with one of the Visual Studio Application Templates logging is enabled by default.</p>
+<p>But its only configured to a degree and only to show C# and ASP.NET logs of a certain level.</p>
+<p>Lets checkout the default <code>appsettings.Development.json</code>:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">"DetailedErrors"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">"Logging"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"LogLevel"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">"Default"</span><span class="p">:</span> <span class="s2">"Information"</span><span class="p">,</span>
+      <span class="nt">"Microsoft.AspNetCore"</span><span class="p">:</span> <span class="s2">"Warning"</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There are only two root keys. While <code>DetailedErrors</code> might sound 'interesting', its not what we're looking for, since it only deals with Exceptions.</p>
+<p>What we're looking for is the <code>Logging</code> Section. It's a Dictionary of <code>Category</code> and their logging level.
+The <code>Default</code> key is special, since it provides the default level for all unconfigured categories.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Categories">
+<a class="anchor" href="#Categories" aria-hidden="true"><span class="octicon octicon-link"></span></a>Categories<a class="anchor-link" href="#Categories"> </a>
+</h3>
+<p>Everytime a Logger is created, a category is specified.
+That category is included with each log message created by that instance of the Logger.
+The category string is arbitrary, but the convention is to use the class name.</p>
+<p>For example in our current Config the Category <code>Microsoft.AspNetCore</code> affects the logging of the Asp.NET Framwork itself.</p>
+<p>With the current configuration we have a Log level of <code>Warning</code> from the <code>AspNetCore</code> Framework and <code>Information</code> for everything else.</p>
+<p>Let's try it, start your Application using F5 and have a Look at the output in the CMD Window that opens.</p>
+<p>The output in your CMD window should look similiar to this:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span>info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">14</span><span class="o">]</span>
+      Now listening on: https://localhost:7252
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">14</span><span class="o">]</span>
+      Now listening on: http://localhost:5252
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Content root path: C:<span class="se">\U</span>sers<span class="se">\m</span>agoerlich<span class="se">\s</span>ource<span class="se">\r</span>epos<span class="se">\B</span>lazorSandbox<span class="se">\B</span>lazorSandbox<span class="se">\</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Since <code>Microsoft.Hosting</code> has not a specified log level, it inherits the <code>Default</code> one and so we see these logs.</p>
+<p>But we don't see any <code>Microsoft.AspNetCore</code> entries, since the log level is set to <code>warning</code> and there currently should'nt be any warnings in your application.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Customize-the-basic-config">
+<a class="anchor" href="#Customize-the-basic-config" aria-hidden="true"><span class="octicon octicon-link"></span></a>Customize the basic config<a class="anchor-link" href="#Customize-the-basic-config"> </a>
+</h2>
+<p>Lets change the Logging level of <code>Microsoft.AspNetCore</code> to <code>Information</code> as well.</p>
+<p>To do this, either delete the <code>Microsoft.AspNetCore</code> line from your config, to make it inherit the default as well, or you can set it explicitly like this:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="err">...</span>
+    <span class="nt">"Logging"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="err">...</span>
+        <span class="nt">"Microsoft.AspNetCore"</span><span class="p">:</span> <span class="s2">"Information"</span>
+        <span class="err">...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now lets restart the application and watch a flood of loggs flow through our CMD Window:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="hide-collapse">
+<a class="anchor" href="#hide-collapse" aria-hidden="true"><span class="octicon octicon-link"></span></a>hide-collapse<a class="anchor-link" href="#hide-collapse"> </a>
+</h1>
+<div class="highlight"><pre><span></span>info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager<span class="o">[</span><span class="m">63</span><span class="o">]</span>
+      User profile is available. Using <span class="s1">'C:\Users\magoerlich\AppData\Local\ASP.NET\DataProtection-Keys'</span> as key repository and Windows DPAPI to encrypt keys at rest.
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">14</span><span class="o">]</span>
+      Now listening on: https://localhost:7252
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">14</span><span class="o">]</span>
+      Now listening on: http://localhost:5252
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Content root path: C:<span class="se">\U</span>sers<span class="se">\m</span>agoerlich<span class="se">\s</span>ource<span class="se">\r</span>epos<span class="se">\B</span>lazorSandbox<span class="se">\B</span>lazorSandbox<span class="se">\</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 POST https://localhost:7252/_blazor/negotiate?negotiateVersion<span class="o">=</span><span class="m">1</span> text/plain<span class="p">;</span><span class="nv">charset</span><span class="o">=</span>UTF-8 <span class="m">0</span>
+info: Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler<span class="o">[</span><span class="m">7</span><span class="o">]</span>
+      Identity.Application was not authenticated. Failure message: Unprotect ticket failed
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Executing endpoint <span class="s1">'/_blazor/negotiate'</span>
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Executed endpoint <span class="s1">'/_blazor/negotiate'</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 POST https://localhost:7252/_blazor/negotiate?negotiateVersion<span class="o">=</span><span class="m">1</span> text/plain<span class="p">;</span><span class="nv">charset</span><span class="o">=</span>UTF-8 <span class="m">0</span> - <span class="m">200</span> <span class="m">316</span> application/json <span class="m">60</span>.4700ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/1.1 GET https://localhost:7252/_blazor?id<span class="o">=</span>U9EOBELNcAdSNsKl2ac1UA - -
+info: Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler<span class="o">[</span><span class="m">7</span><span class="o">]</span>
+      Identity.Application was not authenticated. Failure message: Unprotect ticket failed
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Executing endpoint <span class="s1">'/_blazor'</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/fetchdata - -
+info: Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler<span class="o">[</span><span class="m">7</span><span class="o">]</span>
+      Identity.Application was not authenticated. Failure message: Unprotect ticket failed
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Executing endpoint <span class="s1">'/_Host'</span>
+info: Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker<span class="o">[</span><span class="m">3</span><span class="o">]</span>
+      Route matched with <span class="o">{</span><span class="nv">page</span> <span class="o">=</span> <span class="s2">"/_Host"</span>, <span class="nv">area</span> <span class="o">=</span> <span class="s2">""</span><span class="o">}</span>. Executing page /_Host
+info: Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker<span class="o">[</span><span class="m">107</span><span class="o">]</span>
+      Executing an implicit handler method - ModelState is Valid
+info: Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker<span class="o">[</span><span class="m">109</span><span class="o">]</span>
+      Executed an implicit handler method, returned result Microsoft.AspNetCore.Mvc.RazorPages.PageResult.
+warn: BlazorSandbox.Pages.FetchData<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      OnInitializedAsync
+warn: BlazorSandbox.Pages.FetchData<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      OnParameterSetAsync
+info: Microsoft.AspNetCore.Authorization.DefaultAuthorizationService<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Authorization failed. These requirements were not met:
+      DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+info: Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker<span class="o">[</span><span class="m">4</span><span class="o">]</span>
+      Executed page /_Host in <span class="m">2137</span>.5253ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Executed endpoint <span class="s1">'/_Host'</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/fetchdata - - - <span class="m">200</span> - text/html<span class="p">;</span>+charset<span class="o">=</span>utf-8 <span class="m">2167</span>.6383ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 POST https://localhost:7252/_blazor/disconnect multipart/form-data<span class="p">;</span>+boundary<span class="o">=</span>----WebKitFormBoundarydCuHPFSVBNxAmn3j <span class="m">359</span>
+info: Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler<span class="o">[</span><span class="m">7</span><span class="o">]</span>
+      Identity.Application was not authenticated. Failure message: Unprotect ticket failed
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Executing endpoint <span class="s1">'Blazor disconnect'</span>
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Executed endpoint <span class="s1">'Blazor disconnect'</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 POST https://localhost:7252/_blazor/disconnect multipart/form-data<span class="p">;</span>+boundary<span class="o">=</span>----WebKitFormBoundarydCuHPFSVBNxAmn3j <span class="m">359</span> - <span class="m">200</span> <span class="m">0</span> - <span class="m">11</span>.3934ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Executed endpoint <span class="s1">'/_blazor'</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/1.1 GET https://localhost:7252/_blazor?id<span class="o">=</span>U9EOBELNcAdSNsKl2ac1UA - - - <span class="m">101</span> - - <span class="m">2375</span>.3138ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/css/bootstrap/bootstrap.min.css - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/css/site.css - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/BlazorSandbox.styles.css - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware<span class="o">[</span><span class="m">6</span><span class="o">]</span>
+      The file /BlazorSandbox.styles.css was not modified
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware<span class="o">[</span><span class="m">6</span><span class="o">]</span>
+      The file /css/bootstrap/bootstrap.min.css was not modified
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware<span class="o">[</span><span class="m">6</span><span class="o">]</span>
+      The file /css/site.css was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/BlazorSandbox.styles.css - - - <span class="m">304</span> - text/css <span class="m">18</span>.0277ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/css/bootstrap/bootstrap.min.css - - - <span class="m">304</span> - text/css <span class="m">19</span>.7418ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/css/site.css - - - <span class="m">304</span> - text/css <span class="m">18</span>.2424ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/_framework/blazor.server.js - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware<span class="o">[</span><span class="m">6</span><span class="o">]</span>
+      The file /_framework/blazor.server.js was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/_framework/aspnetcore-browser-refresh.js - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/_framework/blazor.server.js - - - <span class="m">304</span> - application/javascript <span class="m">0</span>.7157ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/css/open-iconic/font/css/open-iconic-bootstrap.min.css - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware<span class="o">[</span><span class="m">6</span><span class="o">]</span>
+      The file /css/open-iconic/font/css/open-iconic-bootstrap.min.css was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/css/open-iconic/font/css/open-iconic-bootstrap.min.css - - - <span class="m">304</span> - text/css <span class="m">1</span>.8195ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/_framework/aspnetcore-browser-refresh.js - - - <span class="m">200</span> <span class="m">11996</span> application/javascript<span class="p">;</span>+charset<span class="o">=</span>utf-8 <span class="m">4</span>.4361ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/_vs/browserLink - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/_blazor/initializers - -
+info: Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler<span class="o">[</span><span class="m">7</span><span class="o">]</span>
+      Identity.Application was not authenticated. Failure message: Unprotect ticket failed
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Executing endpoint <span class="s1">'Blazor initializers'</span>
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Executed endpoint <span class="s1">'Blazor initializers'</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/_blazor/initializers - - - <span class="m">200</span> - application/json<span class="p">;</span>+charset<span class="o">=</span>utf-8 <span class="m">9</span>.8888ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/_vs/browserLink - - - <span class="m">200</span> - text/javascript<span class="p">;</span>+charset<span class="o">=</span>UTF-8 <span class="m">35</span>.0733ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/css/open-iconic/font/fonts/open-iconic.woff - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware<span class="o">[</span><span class="m">6</span><span class="o">]</span>
+      The file /css/open-iconic/font/fonts/open-iconic.woff was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/css/open-iconic/font/fonts/open-iconic.woff - - - <span class="m">304</span> - application/font-woff <span class="m">0</span>.6011ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 POST https://localhost:7252/_blazor/negotiate?negotiateVersion<span class="o">=</span><span class="m">1</span> text/plain<span class="p">;</span><span class="nv">charset</span><span class="o">=</span>UTF-8 <span class="m">0</span>
+info: Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler<span class="o">[</span><span class="m">7</span><span class="o">]</span>
+      Identity.Application was not authenticated. Failure message: Unprotect ticket failed
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Executing endpoint <span class="s1">'/_blazor/negotiate'</span>
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Executed endpoint <span class="s1">'/_blazor/negotiate'</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 POST https://localhost:7252/_blazor/negotiate?negotiateVersion<span class="o">=</span><span class="m">1</span> text/plain<span class="p">;</span><span class="nv">charset</span><span class="o">=</span>UTF-8 <span class="m">0</span> - <span class="m">200</span> <span class="m">316</span> application/json <span class="m">1</span>.2503ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/1.1 GET https://localhost:7252/_blazor?id<span class="o">=</span>HMzCfb6h0pZ5Dp0U9nA75g - -
+info: Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler<span class="o">[</span><span class="m">7</span><span class="o">]</span>
+      Identity.Application was not authenticated. Failure message: Unprotect ticket failed
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      Executing endpoint <span class="s1">'/_blazor'</span>
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">1</span><span class="o">]</span>
+      Request starting HTTP/2 GET https://localhost:7252/favicon.ico - -
+info: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware<span class="o">[</span><span class="m">6</span><span class="o">]</span>
+      The file /favicon.ico was not modified
+info: Microsoft.AspNetCore.Hosting.Diagnostics<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Request finished HTTP/2 GET https://localhost:7252/favicon.ico - - - <span class="m">304</span> - image/x-icon <span class="m">0</span>.7264ms
+warn: BlazorSandbox.Pages.FetchData<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      OnInitializedAsync
+warn: BlazorSandbox.Pages.FetchData<span class="o">[</span><span class="m">0</span><span class="o">]</span>
+      OnParameterSetAsync
+info: Microsoft.AspNetCore.Authorization.DefaultAuthorizationService<span class="o">[</span><span class="m">2</span><span class="o">]</span>
+      Authorization failed. These requirements were not met:
+      DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Your output might vary slightly, but the important change you should be able to observe is that there are more logs than before
+and all of them Start with <code>info: Microsoft.AspNetCore ...</code>.</p>
+<p>These messages were supresed through the config before.</p>
+<h3 id="Log-Level">
+<a class="anchor" href="#Log-Level" aria-hidden="true"><span class="octicon octicon-link"></span></a>Log Level<a class="anchor-link" href="#Log-Level"> </a>
+</h3>
+<p>There are more log levels than just <code>Information</code> and <code>Warning</code>.
+Each with its own semantics and verbosity.</p>
+<p>Here's a list, try a few of these with the <code>Microsoft.AspNet</code> Category to experiment:</p>
+<ul>
+<li>None</li>
+<li>Critical</li>
+<li>Error</li>
+<li>Warning</li>
+<li>Information</li>
+<li>Debug</li>
+<li>Trace</li>
+</ul>
+<p>You can find further information about the semantics of these levels in the <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line#log-level">.NET Core Documentation</a></p>
+<p>Thats it for today. In the next part, we'll take a look at how to use all of this when writing logs from your own code.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="magoerlich/devblog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/devblog/asp/dotnet/logging/c%23/2022/09/25/ASP.NET-Core-Part-1-Configuration.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/devblog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/devblog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/devblog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>My personal blog about work related stuff</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/magoerlich" target="_blank" title="magoerlich"><svg class="svg-icon grey"><use xlink:href="/devblog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/starflowed" target="_blank" title="starflowed"><svg class="svg-icon grey"><use xlink:href="/devblog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
